@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=
+CFLAGS=-Wall -g
+DEPS=tbl.h
+OBJS=DownTorr.o
 
-DownTorr: DownTorr.o
-	$(CC) -o DownTorr DownTorr.o
-	
+DownTorr: DownTorr.c
+	$(CC) $(CFLAGS) DownTorr.c tbl.c tbl.h -o DownTorr 
 clean:
-	rm DownTorr
-	rm *.o
+	rm DownTorr $(OBJS) *.gch
 	

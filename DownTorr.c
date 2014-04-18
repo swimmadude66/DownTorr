@@ -1,16 +1,32 @@
-#include <stdio.h>                  /* for printf() and fprintf() */
-#include <sys/socket.h>             /* for socket(), connect(), send(), and recv() */
-#include <arpa/inet.h>              /* for sockaddr_in and inet_addr() */
+#include <stdio.h>      
+#include <sys/socket.h>               
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "tbl.h"
+
 
 char* torrent_file;
 char* file_dest;
 
+char* file_buf;
+
+int num_peers;
+
+static struct tbl_callbacks callbacks;
+char* results;
+
+struct Peer{
+  int piece;
+  int size;
+  char* peer_buf;
+}peer;
+
+
 int main(int argc, char*argv[]){
   if (argc !=3){
     printf("Unable to Parse. Correct usage: DownTorr path_To_File desired_Location\n");
+    exit(1);
   }
   else{
       torrent_file = argv[1];
@@ -19,4 +35,24 @@ int main(int argc, char*argv[]){
   
   printf("Downloading to %s\n",file_dest);
   
+  FILE *f = fopen(torrent_file, "rb");
+  fseek(f, 0, SEEK_END);
+  long fsize = ftell(f);
+  rewind(f);
+
+  char *string = malloc(fsize + 1);
+  fread(string, fsize, 1, f);
+  fclose(f);
+
+  string[fsize] = 0;
+  
+  int err = tbl_parse((const char*)string, fsize+1, &callbacks,&results);
+  
+  printf("torrent file contents: %s\n",string);
+  printf("decoded: %s\n",results);
+  
+  
+  
+  return 0; 
 }
+
