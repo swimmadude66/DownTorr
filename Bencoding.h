@@ -11,6 +11,16 @@ typedef enum BType {
 
 struct Bencoding;
 
+typedef struct torrent {
+	char *announce;
+	char *name;
+	int piece_length;
+	int length;
+	unsigned char *pieces[][];
+	char *path;
+	char *url-list;
+}
+
 typedef struct ListNode {
 	struct Bencoding *cargo;
 	struct ListNode *next;
