@@ -51,6 +51,9 @@ int main(int argc, char*argv[]){
   
   printf("torrent file contents: %s\n",string);
   
+  Bencoding *b=parse_start(string);
+  print_bencoding(b,0);
+  
   
   
   return 0; 
