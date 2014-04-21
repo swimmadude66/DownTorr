@@ -63,19 +63,22 @@ void failed()
 	exit(-1);
 }
 
-
+/*
 char reloadBuffer() 
 { 
-	buf_lim = strlen(buf);
 	pos = 0;
-	return (char)NULL;
+	printf("BUFFER POS RESET\n");
+	return ' ';
 }
+*/
 
 void checkBufReady()
 {
 	if (pos >= buf_lim){
-		reloadBuffer();
+	//	reloadBuffer();
+	  printf("BUFFER OVERFLOW!\n");
 	}
+
 }
 
 char peekChar()
@@ -87,6 +90,7 @@ char peekChar()
 char getChar()
 {
 	checkBufReady();
+	printf("Char: %c at pos: %d\n",buf[pos+1],pos+1);
 	return buf[pos++];
 }
 
@@ -163,6 +167,8 @@ Bencoding* parse_start(char* input)
 {
 	sprintf(buf,"%s",input);
 	printf("Buffer filled\n");
+	buf_lim= 2309; 
+	printf("buf_lim: %d\n",(int)buf_lim);
 	return parse_bencoding();
 }
 
