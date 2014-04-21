@@ -28,9 +28,7 @@ int main(int argc, char*argv[]){
       torrent_file = argv[1];
       file_dest = argv[2];
   }
-  
-  printf("Downloading to %s\n",file_dest);
-  
+ 
   FILE *f = fopen(torrent_file, "rb");
 	if(f==NULL){
 		printf("Cannot open file %s\n",torrent_file);
@@ -44,10 +42,14 @@ int main(int argc, char*argv[]){
   char *string = malloc(fsize + 1);
   fread(string, fsize, 1, f);
   fclose(f);
-
   string[fsize]=0;
+
   Torrent *t=parse_start(string,fsize);  
   free(string);
+
+  printf("Downloading to %s%s\n",file_dest,t->name);
+
+
   printf("announce: %s\n",t->announce);
   printf("name: %s\n",t->name);
   printf("piece length: %d\n",t->piece_length);

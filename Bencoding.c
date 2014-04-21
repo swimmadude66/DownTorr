@@ -171,7 +171,6 @@ Torrent* parse_start(char* input,long limit)
 	}
 	printf("Parsing...\n");
 	Bencoding *b =  parse_bencoding();
-	print_bencoding(b,0);
 	return parse_torrent(b);
 }
 
