@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "tbl.h"
+#include "tbl/tbl.h"
 
 
 char* torrent_file;
@@ -14,13 +14,15 @@ char* file_buf;
 int num_peers;
 
 static struct tbl_callbacks callbacks;
-char* results;
+
+char *result;
 
 struct Peer{
   int piece;
   int size;
   char* peer_buf;
 }peer;
+
 
 
 int main(int argc, char*argv[]){
@@ -36,6 +38,11 @@ int main(int argc, char*argv[]){
   printf("Downloading to %s\n",file_dest);
   
   FILE *f = fopen(torrent_file, "rb");
+	if(f==NULL){
+		printf("Cannot open file %s\n",torrent_file);
+		exit(-1);
+	}
+
   fseek(f, 0, SEEK_END);
   long fsize = ftell(f);
   rewind(f);
@@ -46,10 +53,14 @@ int main(int argc, char*argv[]){
 
   string[fsize] = 0;
   
-  int err = tbl_parse((const char*)string, fsize+1, &callbacks,&results);
-  
   printf("torrent file contents: %s\n",string);
-  printf("decoded: %s\n",results);
+  
+  if(tbl_parse((const char*)string, fsize+1, &callbacks,result)!=TBL_E_NONE){
+    printf("ERROR!!!!!");
+    exit(-1);
+  }
+  
+  printf("Decoded: %s\n",&result);
   
   
   
