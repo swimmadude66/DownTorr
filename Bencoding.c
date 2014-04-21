@@ -167,7 +167,7 @@ Bencoding* parse_start(char* input)
 {
 	sprintf(buf,"%s",input);
 	printf("Buffer filled\n");
-	buf_lim= 2309; 
+	buf_lim= 2308; 
 	printf("buf_lim: %d\n",(int)buf_lim);
 	return parse_bencoding();
 }

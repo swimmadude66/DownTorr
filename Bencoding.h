@@ -16,10 +16,10 @@ typedef struct torrent {
 	char *name;
 	int piece_length;
 	int length;
-	unsigned char *pieces[][];
+	char *pieces;
 	char *path;
-	char *url-list;
-}
+	char *url_list;
+} torrent;
 
 typedef struct ListNode {
 	struct Bencoding *cargo;
