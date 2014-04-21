@@ -42,16 +42,19 @@ int main(int argc, char*argv[]){
   rewind(f);
 
   char *string = malloc(fsize + 1);
-  int size_read = fread(string, fsize, 1, f);
+  fread(string, fsize, 1, f);
   fclose(f);
 
-  printf("size_read: %d\n",size_read);
-  printf("torrent file contents: %s\n",string);
-
-  Bencoding *b=parse_start(string,fsize);
-  print_bencoding(b,0);
-
+  string[fsize]=0;
+  Torrent *t=parse_start(string,fsize);  
   free(string);
+  printf("announce: %s\n",t->announce);
+  printf("name: %s\n",t->name);
+  printf("piece length: %d\n",t->piece_length);
+  printf("length: %d\n",t->length);
+  printf("path: %s\n",t->path);
+  printf("url-list: %s\n",t->url_list);
+  printf("pieces: %s\n",t->pieces);
 
   return 0; 
 }

@@ -11,7 +11,7 @@ typedef enum BType {
 
 struct Bencoding;
 
-typedef struct torrent {
+typedef struct Torrent {
 	char *announce;
 	char *name;
 	int piece_length;
@@ -19,7 +19,7 @@ typedef struct torrent {
 	char *pieces;
 	char *path;
 	char *url_list;
-} torrent;
+} Torrent;
 
 typedef struct ListNode {
 	struct Bencoding *cargo;
@@ -42,7 +42,7 @@ typedef struct Bencoding {
 	} cargo; // data
 } Bencoding;
 
-Bencoding* parse_start(char* input, long limit);
+Torrent* parse_start(char* input, long limit);
 Bencoding* parse_bencoding();
 void print_bencoding(Bencoding *b, int indent);
-
+Torrent* parse_torrent(Bencoding *b);

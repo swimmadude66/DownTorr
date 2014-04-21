@@ -107,7 +107,7 @@ Bencoding* parse_int()
 	while (isdigit(peekChar()))
 		val = val*10 + (getChar() - '0');
 	matchChar('e');
-	printf("%d\n",(int)val);
+//	printf("%d\n",(int)val);
 	return new_bint(val);
 }
 
@@ -116,7 +116,7 @@ Bencoding* parse_list()
 	matchChar('l');
 	ListNode l;
 	ListNode *c = &l;
-	printf("List: \n");
+//	printf("List: \n");
 	while (peekChar() != 'e') {
 		c->next = new_listnode();
 		c = c->next;
@@ -138,7 +138,7 @@ Bencoding* parse_string()
 	for (i = 0; i < len; ++i)
 		s[i] = getChar();
 	s[len] = 0;
-	printf("%s\n",s);
+//	printf("%s\n",s);
 	return new_bstring(s, len+1);
 }
 
@@ -150,11 +150,11 @@ Bencoding* parse_dict()
 	while (peekChar() != 'e') {
 		c->next = new_dictnode();
 		c = c->next;
-		printf("Key: ");
+//		printf("Key: ");
 		Bencoding *s = parse_string();
 		c->key = s->cargo.str;
 		free(s);
-		printf("Value: ");
+//		printf("Value: ");
 		c->value = parse_bencoding();
 		c->next = 0;
 	}
@@ -162,18 +162,17 @@ Bencoding* parse_dict()
 	return new_bdict(d.next);
 }
 
-Bencoding* parse_start(char* input,long limit)
+Torrent* parse_start(char* input,long limit)
 {
 	buf_lim= (int)limit;
-	printf("buf_lim: %d\n",buf_lim);
 	int i =0;
-	for(i<buf_lim; i++;){
+	for(;i<buf_lim; i++){
 		buf[i] = input[i];
 	}
-	buf[buf_lim]=0;
-	printf("Buffer filled\n");
-	printf("Buffer Contents: %s\n",buf);
-	return parse_bencoding();
+	printf("Parsing...\n");
+	Bencoding *b =  parse_bencoding();
+	print_bencoding(b,0);
+	return parse_torrent(b);
 }
 
 Bencoding* parse_bencoding()
@@ -181,7 +180,7 @@ Bencoding* parse_bencoding()
 	char c = peekChar();
 	switch (c) {
 		case 'd':
-		  printf("New Dictionary\n");
+//		  printf("New Dictionary\n");
 		  return parse_dict();
 		case 'l':
 //		  printf("List\n");
@@ -200,6 +199,60 @@ void print_indent(int indent)
 	int i;
 	for (i = 0; i < indent; ++i)
 		printf("  ");
+}
+
+Torrent* parse_torrent(Bencoding *b){
+	Torrent *t = malloc(sizeof(Torrent));
+	if(b->type != BDict){
+		printf("Not a valid torrent bencode!\n");
+		return NULL; 
+	}
+	DictNode *d = b->cargo.dict;
+	DictNode *p = NULL;
+	while(d != NULL){
+		if(!strcmp(d->key,"announce")){
+		  t->announce = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"name")){
+		  t->name = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"piece length")){
+		  t->piece_length = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"length")){
+		  t->length = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"pieces")){
+		  t->pieces = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"path")){
+		  t->path = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"url-list")){
+		  t->url_list = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"info")){
+		  p=d;
+		  d = d->value->cargo.dict;
+		}
+		else{
+		   d=d->next;
+		}
+		if(d==NULL){
+		  if (p!=NULL){
+		     d=p->next;
+		     p=NULL;
+		   }
+		}
+	}
+	return t;
 }
 
 
