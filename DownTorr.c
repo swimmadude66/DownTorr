@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "tbl/tbl.h"
+#include "Bencoding.h"
 
 
 char* torrent_file;
@@ -12,10 +12,6 @@ char* file_dest;
 char* file_buf;
 
 int num_peers;
-
-static struct tbl_callbacks callbacks;
-
-char *result;
 
 struct Peer{
   int piece;
@@ -54,13 +50,6 @@ int main(int argc, char*argv[]){
   string[fsize] = 0;
   
   printf("torrent file contents: %s\n",string);
-  
-  if(tbl_parse((const char*)string, fsize+1, &callbacks,result)!=TBL_E_NONE){
-    printf("ERROR!!!!!");
-    exit(-1);
-  }
-  
-  printf("Decoded: %s\n",&result);
   
   
   
