@@ -42,7 +42,7 @@ typedef struct Bencoding {
 	} cargo; // data
 } Bencoding;
 
-Bencoding* parse_start(char* input);
+Bencoding* parse_start(char* input, long limit);
 Bencoding* parse_bencoding();
 void print_bencoding(Bencoding *b, int indent);
 

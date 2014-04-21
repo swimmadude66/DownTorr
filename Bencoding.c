@@ -77,6 +77,7 @@ void checkBufReady()
 	if (pos >= buf_lim){
 	//	reloadBuffer();
 	  printf("BUFFER OVERFLOW!\n");
+	  pos=0;
 	}
 
 }
@@ -90,7 +91,6 @@ char peekChar()
 char getChar()
 {
 	checkBufReady();
-	printf("Char: %c at pos: %d\n",buf[pos+1],pos+1);
 	return buf[pos++];
 }
 
@@ -153,7 +153,6 @@ Bencoding* parse_dict()
 		printf("Key: ");
 		Bencoding *s = parse_string();
 		c->key = s->cargo.str;
-		
 		free(s);
 		printf("Value: ");
 		c->value = parse_bencoding();
@@ -163,12 +162,17 @@ Bencoding* parse_dict()
 	return new_bdict(d.next);
 }
 
-Bencoding* parse_start(char* input)
+Bencoding* parse_start(char* input,long limit)
 {
-	sprintf(buf,"%s",input);
+	buf_lim= (int)limit;
+	printf("buf_lim: %d\n",buf_lim);
+	int i =0;
+	for(i<buf_lim; i++;){
+		buf[i] = input[i];
+	}
+	buf[buf_lim]=0;
 	printf("Buffer filled\n");
-	buf_lim= 2308; 
-	printf("buf_lim: %d\n",(int)buf_lim);
+	printf("Buffer Contents: %s\n",buf);
 	return parse_bencoding();
 }
 

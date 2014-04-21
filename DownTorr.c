@@ -19,8 +19,6 @@ struct Peer{
   char* peer_buf;
 }peer;
 
-
-
 int main(int argc, char*argv[]){
   if (argc !=3){
     printf("Unable to Parse. Correct usage: DownTorr path_To_File desired_Location\n");
@@ -44,18 +42,17 @@ int main(int argc, char*argv[]){
   rewind(f);
 
   char *string = malloc(fsize + 1);
-  fread(string, fsize, 1, f);
+  int size_read = fread(string, fsize, 1, f);
   fclose(f);
 
-  string[fsize] = 0;
-  
+  printf("size_read: %d\n",size_read);
   printf("torrent file contents: %s\n",string);
-  
-  Bencoding *b=parse_start(string);
+
+  Bencoding *b=parse_start(string,fsize);
   print_bencoding(b,0);
-  
-  
-  
+
+  free(string);
+
   return 0; 
 }
 
