@@ -11,15 +11,49 @@ typedef enum BType {
 
 struct Bencoding;
 
+typedef struct str_t{
+	char *string;
+	int length;
+} str_t;
+
 typedef struct Torrent {
 	char *announce;
 	char *name;
 	int piece_length;
 	int length;
+	int pieces_size;
 	char *pieces;
 	char *path;
 	char *url_list;
+	char *info_hash;
 } Torrent;
+
+/*
+typedef struct Torr_File {
+	int length;
+	char* path;
+} Torr_File;
+*/
+
+typedef struct Peer {
+    char *peer_id;
+    char *ip;
+    int port;
+} Peer;
+
+typedef struct Response {
+    char *failure_reason;
+    char *warning;
+    int interval;
+    int min_interval;
+    char *tracker_id;
+    int seeders;
+    int leechers;
+    Peer* peers;
+} Response;
+
+
+
 
 typedef struct ListNode {
 	struct Bencoding *cargo;
@@ -37,13 +71,15 @@ typedef struct Bencoding {
 	union {
 		long long val;  // used when type == BInt
 		ListNode *list; // used when type == BList
-		char *str;      // used when type == BString
+		str_t str;      // used when type == BString
 		DictNode *dict;
 	} cargo; // data
 } Bencoding;
 
-Torrent* parse_start(char* input, long limit);
+Bencoding* parse_start(char* input, long limit);
 Bencoding* parse_bencoding();
 char* get_info_dict(char *input);
 void print_bencoding(Bencoding *b, int indent);
-Torrent* parse_torrent(Bencoding *b);
+Torrent* parse_torrent(char *input, long limit);
+Response* parse_response(char *input, long limit);
+void parse_peers(Response *r, ListNode *l);
