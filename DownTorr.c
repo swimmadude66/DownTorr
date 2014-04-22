@@ -9,7 +9,10 @@
 char* torrent_file;
 char* file_dest;
 
+
 char* file_buf;
+char* GET_request;
+
 
 int num_peers;
 
@@ -57,6 +60,11 @@ int main(int argc, char*argv[]){
   printf("path: %s\n",t->path);
   printf("url-list: %s\n",t->url_list);
   printf("pieces: %s\n",t->pieces);
+
+  int get_length = strlen(t->announce)+strlen(t->info_hash)+strlen(t->length)+46; 
+
+  GET_request = t->announce;
+  
 
   return 0; 
 }

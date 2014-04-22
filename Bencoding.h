@@ -19,6 +19,7 @@ typedef struct Torrent {
 	char *pieces;
 	char *path;
 	char *url_list;
+	char *info_hash;
 } Torrent;
 
 typedef struct ListNode {
