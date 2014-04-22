@@ -44,5 +44,6 @@ typedef struct Bencoding {
 
 Torrent* parse_start(char* input, long limit);
 Bencoding* parse_bencoding();
+char* get_info_dict(char *input);
 void print_bencoding(Bencoding *b, int indent);
 Torrent* parse_torrent(Bencoding *b);

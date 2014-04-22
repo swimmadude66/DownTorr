@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <locale.h>
 #include "Bencoding.h"
 
 
@@ -29,6 +30,9 @@ int main(int argc, char*argv[]){
       file_dest = argv[2];
   }
  
+  char *locale;
+  locale = setlocale(LC_ALL,"en_US.UTF-8");
+
   FILE *f = fopen(torrent_file, "rb");
 	if(f==NULL){
 		printf("Cannot open file %s\n",torrent_file);
@@ -45,11 +49,12 @@ int main(int argc, char*argv[]){
   string[fsize]=0;
 
   Torrent *t=parse_start(string,fsize);  
+  char *info;
+  info = get_info_dict(string);
+  printf("info %s", info);
   free(string);
 
   printf("Downloading to %s%s\n",file_dest,t->name);
-
-
   printf("announce: %s\n",t->announce);
   printf("name: %s\n",t->name);
   printf("piece length: %d\n",t->piece_length);
@@ -57,6 +62,8 @@ int main(int argc, char*argv[]){
   printf("path: %s\n",t->path);
   printf("url-list: %s\n",t->url_list);
   printf("pieces: %s\n",t->pieces);
+
+  
 
   return 0; 
 }
