@@ -201,6 +201,61 @@ void print_indent(int indent)
 		printf("  ");
 }
 
+
+char* get_info_dict(char *input) {
+	int index = 0;
+	int info_found = 0;
+	int info_ends_remaining = 1;
+	while (!info_found) {
+		if(input[index] == '4') {
+			if(input[index+1] == ':') {
+				if(input[index+2] == 'i') {
+					if(input[index+3] == 'n') {
+						if(input[index+4] == 'f') {
+							if(input[index+5] == 'o') {
+								if(input[index+6] == 'd') {;
+									index += 6;
+									info_found = index;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		index++;
+	}
+	while(info_ends_remaining) {
+		if(input[index] != 'e'){
+			if(isdigit(input[index])){
+				int total = input[index] -'0';
+				while(input[index] != ':') {
+					total = (total * 10) + input[index] - '0';
+					index++;
+				}
+				index += total;
+			} else if (input[index] == 'i') {
+				index++;
+				while(input[index] != 'e') {
+					index++;
+				}
+				index++;
+			} else if (input[index] == 'd'|| input[index] == 'l') {
+				info_ends_remaining++;
+				index++;
+			} else {
+				index++;
+			}
+		} else {
+			info_ends_remaining--;
+			index++;
+		} 
+	}
+	char *ret = malloc((size_t) (index - info_found));
+	snprintf(ret, (size_t) (index - info_found), "%s", &input[info_found]);
+       	return ret;
+}
+
 Torrent* parse_torrent(char *input, long limit){
 	Bencoding *b = parse_start(input, limit);
 	Torrent *t = malloc(sizeof(Torrent));
