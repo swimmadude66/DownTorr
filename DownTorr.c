@@ -17,13 +17,13 @@ char* GET_request;
 
 int num_peers;
 
-/*
-struct Peer{
+
+struct Downloader{
   int piece;
   int size;
   char* peer_buf;
-}peer;
-*/
+} Downloader;
+
 
 int main(int argc, char*argv[]){
   if (argc !=3){
@@ -55,14 +55,18 @@ int main(int argc, char*argv[]){
 
   printf("Downloading to %s%s\n",file_dest,t->name);
 
-
+  int i =0;
   printf("announce: %s\n",t->announce);
   printf("name: %s\n",t->name);
   printf("piece length: %d\n",t->piece_length);
   printf("length: %d\n",t->length);
   printf("path: %s\n",t->path);
   printf("url-list: %s\n",t->url_list);
-  printf("pieces: %s\n",t->pieces);
+  printf("pieces: ");
+  for(;i< t->pieces_size;i++){
+    printf("%c",t->pieces[i]);
+  }
+  printf("\n");
 
 //  int get_length = strlen(t->announce)+strlen(t->info_hash)+strlen(t->length)+46; 
 

@@ -45,7 +45,8 @@ Bencoding* new_bstring(char *s, int len)
 {
 	Bencoding *b = new_bencoding();
 	b->type = BString;
-	b->cargo.str = s;
+	b->cargo.str.string = s;
+	b->cargo.str.length = len;
 	return b;
 }
 
@@ -135,10 +136,10 @@ Bencoding* parse_string()
 	matchChar(':');
 	char *s = malloc(sizeof(char)*(len+1));
 	int i;
-	for (i = 0; i < len; ++i)
+	for (i = 0; i < len; ++i){
 		s[i] = getChar();
+	}
 	s[len] = 0;
-//	printf("%s\n",s);
 	return new_bstring(s, len+1);
 }
 
@@ -152,7 +153,7 @@ Bencoding* parse_dict()
 		c = c->next;
 //		printf("Key: ");
 		Bencoding *s = parse_string();
-		c->key = s->cargo.str;
+		c->key = s->cargo.str.string;
 		free(s);
 //		printf("Value: ");
 		c->value = parse_bencoding();
@@ -211,11 +212,11 @@ Torrent* parse_torrent(char *input, long limit){
 	DictNode *p = NULL;
 	while(d != NULL){
 		if(!strcmp(d->key,"announce")){
-		  t->announce = d->value->cargo.str;
+		  t->announce = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"name")){
-		  t->name = d->value->cargo.str;
+		  t->name = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"piece length")){
@@ -227,15 +228,17 @@ Torrent* parse_torrent(char *input, long limit){
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"pieces")){
-		  t->pieces = d->value->cargo.str;
+		  t->pieces = d->value->cargo.str.string;
+  		  t->pieces_size = d->value->cargo.str.length;
+		  printf("Size of Pieces: %d\n",t->pieces_size);
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"path")){
-		  t->path = d->value->cargo.str;
+		  t->path = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"url-list")){
-		  t->url_list = d->value->cargo.str;
+		  t->url_list = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"info")){
@@ -255,6 +258,7 @@ Torrent* parse_torrent(char *input, long limit){
 	return t;
 }
 
+
 Response* parse_response(char *input, long limit)
 {
 	Bencoding *b = parse_start(input, limit);
@@ -263,16 +267,14 @@ Response* parse_response(char *input, long limit)
 	  printf("NOT A VALID RESPONSE!");
 	  return NULL;
 	}
-	int index =0;
 	DictNode *d = b->cargo.dict;
-	DictNode *p = NULL;
 	while(d != NULL){
 		if(!strcmp(d->key,"failure reason")){
-		  r->failure_reason = d->value->cargo.str;
+		  r->failure_reason = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"warning message")){
-		  r->warning = d->value->cargo.str;
+		  r->warning = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"interval")){
@@ -284,7 +286,7 @@ Response* parse_response(char *input, long limit)
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"tracker id")){
-		  r->tracker_id = d->value->cargo.str;
+		  r->tracker_id = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"complete")){
@@ -296,36 +298,42 @@ Response* parse_response(char *input, long limit)
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"peers")){
-		  p=d;
-		  index++;
-		  d = d->value->cargo.dict;
-		}
-		else if(!strcmp(d->key,"peer id")){
-		  r->peers[index].peer_id = d->value->cargo.str;
-		  d = d->next;
-		}
-		else if(!strcmp(d->key,"ip")){
-		  r->peers[index].ip = d->value->cargo.str;
-		  d = d->next;
-		}
-		else if(!strcmp(d->key,"port")){
-		  r->peers[index].port = d->value->cargo.val;
+		  parse_peers(r,d->value->cargo.list);
 		  d = d->next;
 		}
 		else{
 		   d=d->next;
 		}
-		if(d==NULL){
-		  if (p!=NULL){
-		     d=p->next;
-		     p=NULL;
-		   }
-		}
 	}
 	return r;
-	
 }
 
+void parse_peers(Response *r, ListNode *l)
+{
+  int index =0;
+  while(l!=NULL){
+    DictNode *d = l->cargo->cargo.dict;
+    while(d!=NULL){
+	if(!strcmp(d->key,"peer id")){
+	  r->peers[index].peer_id = d->value->cargo.str.string;
+	  d = d->next;
+	}
+	else if(!strcmp(d->key,"ip")){
+	  r->peers[index].ip = d->value->cargo.str.string;
+	  d = d->next;
+	}
+	else if(!strcmp(d->key,"port")){
+	  r->peers[index].port = d->value->cargo.val;
+	  d = d->next;
+	}
+	else{
+	  d=d->next;
+	}
+    }
+    index++;
+    l=l->next;
+  }
+}
 
 void print_bencoding(Bencoding *b, int indent)
 {
@@ -345,7 +353,7 @@ void print_bencoding(Bencoding *b, int indent)
 			printf("]\n");
 			break;
 		case BString:
-			printf("%s\n", b->cargo.str);
+			printf("%s\n", b->cargo.str.string);
 			break;
 		case BDict:
 			printf("{\n");
@@ -363,6 +371,7 @@ void print_bencoding(Bencoding *b, int indent)
 			break;
 	}
 }
+
 /*
 int main(int argc, char *argv[])
 {
