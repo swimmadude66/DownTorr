@@ -162,7 +162,7 @@ Bencoding* parse_dict()
 	return new_bdict(d.next);
 }
 
-Torrent* parse_start(char* input,long limit)
+Bencoding* parse_start(char* input,long limit)
 {
 	buf_lim= (int)limit;
 	int i =0;
@@ -171,7 +171,7 @@ Torrent* parse_start(char* input,long limit)
 	}
 	printf("Parsing...\n");
 	Bencoding *b =  parse_bencoding();
-	return parse_torrent(b);
+	return b;
 }
 
 Bencoding* parse_bencoding()
@@ -200,7 +200,8 @@ void print_indent(int indent)
 		printf("  ");
 }
 
-Torrent* parse_torrent(Bencoding *b){
+Torrent* parse_torrent(char *input, long limit){
+	Bencoding *b = parse_start(input, limit);
 	Torrent *t = malloc(sizeof(Torrent));
 	if(b->type != BDict){
 		printf("Not a valid torrent bencode!\n");
@@ -252,6 +253,77 @@ Torrent* parse_torrent(Bencoding *b){
 		}
 	}
 	return t;
+}
+
+Response* parse_response(char *input, long limit)
+{
+	Bencoding *b = parse_start(input, limit);
+	Response *r = malloc(sizeof(Response));
+	if(b->type!=BDict){
+	  printf("NOT A VALID RESPONSE!");
+	  return NULL;
+	}
+	int index =0;
+	DictNode *d = b->cargo.dict;
+	DictNode *p = NULL;
+	while(d != NULL){
+		if(!strcmp(d->key,"failure reason")){
+		  r->failure_reason = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"warning message")){
+		  r->warning = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"interval")){
+		  r->interval = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"min interval")){
+		  r->min_interval = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"tracker id")){
+		  r->tracker_id = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"complete")){
+		  r->seeders = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"incomplete")){
+		  r->leechers = d->value->cargo.val;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"peers")){
+		  p=d;
+		  index++;
+		  d = d->value->cargo.dict;
+		}
+		else if(!strcmp(d->key,"peer id")){
+		  r->peers[index].peer_id = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"ip")){
+		  r->peers[index].ip = d->value->cargo.str;
+		  d = d->next;
+		}
+		else if(!strcmp(d->key,"port")){
+		  r->peers[index].port = d->value->cargo.val;
+		  d = d->next;
+		}
+		else{
+		   d=d->next;
+		}
+		if(d==NULL){
+		  if (p!=NULL){
+		     d=p->next;
+		     p=NULL;
+		   }
+		}
+	}
+	return r;
+	
 }
 
 

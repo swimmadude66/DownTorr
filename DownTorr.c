@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <openssl/sha.h>
 #include "Bencoding.h"
 
 
@@ -16,11 +17,13 @@ char* GET_request;
 
 int num_peers;
 
+/*
 struct Peer{
   int piece;
   int size;
   char* peer_buf;
 }peer;
+*/
 
 int main(int argc, char*argv[]){
   if (argc !=3){
@@ -47,7 +50,7 @@ int main(int argc, char*argv[]){
   fclose(f);
   string[fsize]=0;
 
-  Torrent *t=parse_start(string,fsize);  
+  Torrent *t=parse_torrent(string,fsize);  
   free(string);
 
   printf("Downloading to %s%s\n",file_dest,t->name);
@@ -61,9 +64,9 @@ int main(int argc, char*argv[]){
   printf("url-list: %s\n",t->url_list);
   printf("pieces: %s\n",t->pieces);
 
-  int get_length = strlen(t->announce)+strlen(t->info_hash)+strlen(t->length)+46; 
+//  int get_length = strlen(t->announce)+strlen(t->info_hash)+strlen(t->length)+46; 
 
-  GET_request = t->announce;
+//  GET_request = t->announce;
   
 
   return 0; 

@@ -22,6 +22,26 @@ typedef struct Torrent {
 	char *info_hash;
 } Torrent;
 
+typedef struct Peer {
+    char *peer_id;
+    char *ip;
+    int port;
+} Peer;
+
+typedef struct Response {
+    char *failure_reason;
+    char *warning;
+    int interval;
+    int min_interval;
+    char *tracker_id;
+    int seeders;
+    int leechers;
+    Peer* peers;
+} Response;
+
+
+
+
 typedef struct ListNode {
 	struct Bencoding *cargo;
 	struct ListNode *next;
@@ -43,7 +63,7 @@ typedef struct Bencoding {
 	} cargo; // data
 } Bencoding;
 
-Torrent* parse_start(char* input, long limit);
+Bencoding* parse_start(char* input, long limit);
 Bencoding* parse_bencoding();
 void print_bencoding(Bencoding *b, int indent);
-Torrent* parse_torrent(Bencoding *b);
+Torrent* parse_torrent(char *input, long limit);
