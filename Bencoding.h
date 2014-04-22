@@ -28,6 +28,13 @@ typedef struct Torrent {
 	char *info_hash;
 } Torrent;
 
+/*
+typedef struct Torr_File {
+	int length;
+	char* path;
+} Torr_File;
+*/
+
 typedef struct Peer {
     char *peer_id;
     char *ip;

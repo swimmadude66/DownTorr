@@ -227,14 +227,16 @@ Torrent* parse_torrent(char *input, long limit){
 		  t->length = d->value->cargo.val;
 		  d = d->next;
 		}
+/*
+		else if(!strcmp(d->key,"files")){
+		  parse_files(t,d->value->cargo.list);
+		  d = d->next;
+		}
+*/
 		else if(!strcmp(d->key,"pieces")){
 		  t->pieces = d->value->cargo.str.string;
   		  t->pieces_size = d->value->cargo.str.length;
 		  printf("Size of Pieces: %d\n",t->pieces_size);
-		  d = d->next;
-		}
-		else if(!strcmp(d->key,"path")){
-		  t->path = d->value->cargo.str.string;
 		  d = d->next;
 		}
 		else if(!strcmp(d->key,"url-list")){
@@ -257,7 +259,6 @@ Torrent* parse_torrent(char *input, long limit){
 	}
 	return t;
 }
-
 
 Response* parse_response(char *input, long limit)
 {
