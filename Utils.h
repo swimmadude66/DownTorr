@@ -83,3 +83,4 @@ void print_bencoding(Bencoding *b, int indent);
 Torrent* parse_torrent(char *input, long limit);
 Response* parse_response(char *input, long limit);
 void parse_peers(Response *r, ListNode *l);
+char *url_encode(char *str);

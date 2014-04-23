@@ -15,9 +15,7 @@ char* file_dest;
 char* file_buf;
 char* GET_request;
 
-
 int num_peers;
-
 
 struct Downloader{
   int piece;
@@ -36,14 +34,16 @@ void generate_GET(Torrent *t)
     strcat(tracker,"?");
     strcat(tracker,"info_hash=");
     strcat(tracker,t->info_hash);
-    strcat(tracker,"&peer_id=~||||_DOWNTORR_||||~&port=6881");
-//    strcat(tracker,
-//    strcat(tracker,
+    strcat(tracker,"&peer_id=~||||_DOWNTORR_||||~&port=6881&uploaded=0&downloaded=0&left=");
+    char length[100];
+    sprintf(length,"%d",t->length);
+    strcat(tracker,length);
 
-
-    GET_request = (char *)malloc(1+strlen(tracker));
-    strcpy(GET_request, tracker);
+    char *encoded =  url_encode(tracker);
+    GET_request = (char *)malloc(1+strlen(encoded));
+    strcpy(GET_request, encoded);
     free(tracker);
+
     printf("Get Request: %s\n",GET_request);
 }
 
