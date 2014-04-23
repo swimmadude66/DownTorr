@@ -1,11 +1,11 @@
-#include <stdio.h>      
-#include <sys/socket.h>               
+#include <stdio.h>
+#include <sys/socket.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <locale.h>
 #include <openssl/sha.h>
-#include "Bencoding.h"
+#include "Utils.h"
 
 
 char* torrent_file;
@@ -26,6 +26,32 @@ struct Downloader{
 } Downloader;
 
 
+
+
+void generate_GET(Torrent *t)
+{ 
+    char * tracker= (char *)malloc(1024);
+    strcpy(tracker, "GET ");
+    strcat(tracker, t->announce);
+    strcat(tracker,"?");
+    strcat(tracker,"info_hash=");
+    strcat(tracker,t->info_hash);
+    strcat(tracker,"&peer_id=~||||_DOWNTORR_||||~&port=6881");
+//    strcat(tracker,
+//    strcat(tracker,
+
+
+    GET_request = (char *)malloc(1+strlen(tracker));
+    strcpy(GET_request, tracker);
+    free(tracker);
+    printf("Get Request: %s\n",GET_request);
+}
+
+
+
+
+
+
 int main(int argc, char*argv[]){
   if (argc !=3){
     printf("Unable to Parse. Correct usage: DownTorr path_To_File desired_Location\n");
@@ -35,9 +61,8 @@ int main(int argc, char*argv[]){
       torrent_file = argv[1];
       file_dest = argv[2];
   }
- 
-  char *locale;
-  locale = setlocale(LC_ALL,"en_US.UTF-8");
+
+  setlocale(LC_ALL,"en_US.UTF-8");
 
   FILE *f = fopen(torrent_file, "rb");
 	if(f==NULL){
@@ -56,32 +81,30 @@ int main(int argc, char*argv[]){
 
   Torrent *t=parse_torrent(string,fsize);  
   
-  char *info;
-  info = get_info_dict(string);
-  printf("info %s", info);
+
+  t->info_hash = get_info_dict(string);
+  printf("info %s", t->info_hash);
   free(string);
 
   printf("Downloading to %s%s\n",file_dest,t->name);
 
-  int i =0;
   printf("announce: %s\n",t->announce);
   printf("name: %s\n",t->name);
   printf("piece length: %d\n",t->piece_length);
   printf("length: %d\n",t->length);
   printf("path: %s\n",t->path);
   printf("url-list: %s\n",t->url_list);
-  printf("pieces: ");
+  printf("num_pieces: %d\n",t->pieces_size/20);
+/*
+  int i =0;
   for(;i< t->pieces_size;i++){
     printf("%c",t->pieces[i]);
   }
   printf("\n");
+*/
 
-//  int get_length = strlen(t->announce)+strlen(t->info_hash)+strlen(t->length)+46; 
+ generate_GET(t);
 
-//  GET_request = t->announce;
-  
-
-  
 
   return 0; 
 }
