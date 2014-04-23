@@ -84,7 +84,14 @@ int main(int argc, char*argv[]){
 //  t->info_hash = (unsigned char *)malloc(20);
   SHA1((unsigned char *)info_dict->string, info_dict->length, t->info_hash);
   free(string);
-  char *encoded=  curl_escape((char *)t->info_hash,20);
+  char encoded[60];
+  int bro;
+  int bigbro = 0;
+  for(bro = 0; bro < 20; bro++) {
+	sprintf(&encoded[bigbro], "%%%02x", t->info_hash[bro]);
+	bigbro += 3;
+  }
+
   printf("INFO HASH: %s\n", encoded);
   int i=0;
   for(;i<20;i++){
