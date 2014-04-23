@@ -25,7 +25,7 @@ typedef struct Torrent {
 	char *pieces;
 	char *path;
 	char *url_list;
-	unsigned char *info_hash;
+	unsigned char info_hash[20];
 } Torrent;
 
 /*

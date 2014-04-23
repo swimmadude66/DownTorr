@@ -250,7 +250,8 @@ str_t* get_info_dict(char *input) {
 		} 
 	}
 	str_t *ret = (str_t *) malloc(sizeof(str_t));
-       	ret->length = (index - info_found);
+	ret->length = (index - info_found);
+        ret->string = (char *) malloc(sizeof(ret->length));
 	snprintf(ret->string, (size_t) ret->length, "%s\n", &input[info_found]);
 	return ret;
 }

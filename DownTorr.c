@@ -33,7 +33,7 @@ void generate_GET(Torrent *t)
     strcat(tracker, t->announce);
     strcat(tracker,"?");
     strcat(tracker,"info_hash=");
-    strcat(tracker,t->info_hash);
+    strcat(tracker,(char *)t->info_hash);
     strcat(tracker,"&peer_id=~||||_DOWNTORR_||||~&port=6881&uploaded=0&downloaded=0&left=");
     char length[100];
     sprintf(length,"%d",t->length);
@@ -79,13 +79,14 @@ int main(int argc, char*argv[]){
   fclose(f);
   string[fsize]=0;
 
-  Torrent *t=parse_torrent(string,fsize);  
-  
+  Torrent *t=parse_torrent(string,fsize);
   str_t *info_dict = get_info_dict(string);
-  SHA1((unsigned char *) info_dict->string, info_dict->length, t->info_hash);
-  printf("info %s", t->info_hash);
+//  t->info_hash = (unsigned char *)malloc(20);
+//  unsigned char hashed[20];
+  SHA1((unsigned char *)info_dict->string, info_dict->length, t->info_hash);
   free(string);
-
+//  printf("INFO HASH: %s\n", hashed);
+//  memcpy(t->info_hash,hashed,20);
   printf("Downloading to %s%s\n",file_dest,t->name);
 
   printf("announce: %s\n",t->announce);
