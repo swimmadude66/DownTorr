@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <string.h>
-#include "Bencoding.h"
+#include "Utils.h"
 
 
 char buf[BUFSIZE];
@@ -151,11 +151,9 @@ Bencoding* parse_dict()
 	while (peekChar() != 'e') {
 		c->next = new_dictnode();
 		c = c->next;
-//		printf("Key: ");
 		Bencoding *s = parse_string();
 		c->key = s->cargo.str.string;
 		free(s);
-//		printf("Value: ");
 		c->value = parse_bencoding();
 		c->next = 0;
 	}
@@ -202,7 +200,7 @@ void print_indent(int indent)
 }
 
 
-char* get_info_dict(char *input) {
+str_t* get_info_dict(char *input) {
 	int index = 0;
 	int info_found = 0;
 	int info_ends_remaining = 1;
@@ -228,12 +226,12 @@ char* get_info_dict(char *input) {
 	while(info_ends_remaining) {
 		if(input[index] != 'e'){
 			if(isdigit(input[index])){
-				int total = input[index] -'0';
+				int total =0;
 				while(input[index] != ':') {
 					total = (total * 10) + input[index] - '0';
 					index++;
 				}
-				index += total;
+				index += total+1;
 			} else if (input[index] == 'i') {
 				index++;
 				while(input[index] != 'e') {
@@ -251,9 +249,10 @@ char* get_info_dict(char *input) {
 			index++;
 		} 
 	}
-	char *ret = malloc((size_t) (index - info_found));
-	snprintf(ret, (size_t) (index - info_found), "%s", &input[info_found]);
-       	return ret;
+	str_t *ret = (str_t *) malloc(sizeof(str_t));
+       	ret->length = (index - info_found);
+	snprintf(ret->string, (size_t) ret->length, "%s\n", &input[info_found]);
+	return ret;
 }
 
 Torrent* parse_torrent(char *input, long limit){
@@ -478,7 +477,6 @@ char *url_decode(char *str) {
   *pbuf = '\0';
   return buf;
 }
-
 
 /*
 int main(int argc, char *argv[])
