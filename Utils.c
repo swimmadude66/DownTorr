@@ -251,8 +251,11 @@ str_t* get_info_dict(char *input) {
 	}
 	str_t *ret = (str_t *) malloc(sizeof(str_t));
 	ret->length = (index - info_found);
-        ret->string = (char *) malloc(sizeof(ret->length));
-	snprintf(ret->string, (size_t) ret->length, "%s\n", &input[info_found]);
+       	ret->string = (char *) malloc(sizeof(ret->length));
+	int i=info_found;
+        for(;i<index;i++){
+          ret->string[i-info_found] = input[i];
+        }
 	return ret;
 }
 
@@ -446,7 +449,7 @@ char to_hex(char code) {
 char *url_encode(char *str) {
   char *pstr = str, *buf = malloc(strlen(str) * 3 + 1), *pbuf = buf;
   while (*pstr) {
-    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '=' || *pstr == '&' || *pstr == '?')
       *pbuf++ = *pstr;
     else if (*pstr == ' ') 
       *pbuf++ = '+';

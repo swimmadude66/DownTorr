@@ -6,7 +6,7 @@
 #include <locale.h>
 #include <openssl/sha.h>
 #include "Utils.h"
-
+#include <curl/curl.h>
 
 char* torrent_file;
 char* file_dest;
@@ -23,26 +23,26 @@ struct Downloader{
   char* peer_buf;
 } Downloader;
 
-
-
-
 void generate_GET(Torrent *t)
 { 
-    char * tracker= (char *)malloc(1024);
+    char tracker[1024];
+    char params[1024];
+    char *encode;
     strcpy(tracker, "GET ");
     strcat(tracker, t->announce);
-    strcat(tracker,"?");
-    strcat(tracker,"info_hash=");
-    strcat(tracker,(char *)t->info_hash);
-    strcat(tracker,"&peer_id=~||||_DOWNTORR_||||~&port=6881&uploaded=0&downloaded=0&left=");
+    strcpy(params,"?info_hash=");
+    strcat(params,(char *)t->info_hash);
+    strcat(params,"&peer_id=");
+    strcat(params,"xxDOWNTORRDOWNTORRxx");
+    strcat(params,"&port=6881&compact=0&uploaded=0&downloaded=0&left=");
     char length[100];
     sprintf(length,"%d",t->length);
-    strcat(tracker,length);
-
-    char *encoded =  url_encode(tracker);
-    GET_request = (char *)malloc(1+strlen(encoded));
-    strcpy(GET_request, encoded);
-    free(tracker);
+    strcat(params,length);
+    encode = url_encode(params);
+    GET_request = (char *)malloc(1+strlen(tracker)+strlen(encode));
+    strcpy(GET_request, tracker);
+    strcat(GET_request, encode);
+//    free(tracker);
 
     printf("Get Request: %s\n",GET_request);
 }
@@ -82,11 +82,15 @@ int main(int argc, char*argv[]){
   Torrent *t=parse_torrent(string,fsize);
   str_t *info_dict = get_info_dict(string);
 //  t->info_hash = (unsigned char *)malloc(20);
-//  unsigned char hashed[20];
   SHA1((unsigned char *)info_dict->string, info_dict->length, t->info_hash);
   free(string);
-//  printf("INFO HASH: %s\n", hashed);
-//  memcpy(t->info_hash,hashed,20);
+  char *encoded=  curl_escape((char *)t->info_hash,20);
+  printf("INFO HASH: %s\n", encoded);
+  int i=0;
+  for(;i<20;i++){
+    printf("%02x ",t->info_hash[i]);
+  }
+  printf("\n");
   printf("Downloading to %s%s\n",file_dest,t->name);
 
   printf("announce: %s\n",t->announce);
