@@ -59,6 +59,7 @@ int main(int argc, char*argv[]){
   char *info;
   info = get_info_dict(string);
   printf("info %s", info);
+  
   free(string);
 
   printf("Downloading to %s%s\n",file_dest,t->name);
