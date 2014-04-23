@@ -81,8 +81,8 @@ int main(int argc, char*argv[]){
 
   Torrent *t=parse_torrent(string,fsize);  
   
-
-  t->info_hash = get_info_dict(string);
+  str_t *info_dict = get_info_dict(string);
+  SHA1((unsigned char *) info_dict->string, info_dict->length, t->info_hash);
   printf("info %s", t->info_hash);
   free(string);
 

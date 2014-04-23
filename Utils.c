@@ -200,7 +200,7 @@ void print_indent(int indent)
 }
 
 
-char* get_info_dict(char *input) {
+str_t* get_info_dict(char *input) {
 	int index = 0;
 	int info_found = 0;
 	int info_ends_remaining = 1;
@@ -249,9 +249,10 @@ char* get_info_dict(char *input) {
 			index++;
 		} 
 	}
-	char *ret = malloc((size_t) (index - info_found));
-	snprintf(ret, (size_t) (index - info_found), "%s\n", &input[info_found]);
-       	return ret;
+	str_t *ret = (str_t *) malloc(sizeof(str_t));
+       	ret->length = (index - info_found);
+	snprintf(ret->string, (size_t) ret->length, "%s\n", &input[info_found]);
+	return ret;
 }
 
 Torrent* parse_torrent(char *input, long limit){
