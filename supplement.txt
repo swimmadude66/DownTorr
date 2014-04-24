@@ -1,0 +1,37 @@
+NOTE: our makefile was not included in our project tar. It has been included
+with this assignment. It needs to be added to the project directory before
+running through the instructions.
+
+
+
+Instructions to test
+	1. run 'make' in a terminal
+	2. run the compiled program
+		a. the program name is DownTorr
+		b. the first arguement is a path to a torrent file
+		c. the second arguement is a folder to save the file
+	
+	Example command: ./DownTorr somefile.torrent somefolder/
+
+Grading Compatability
+	parse torrent: Works
+		Our program can sucessfully parse torrents
+	2) hash/handshake: Inbetween
+		We have hashing working, we did not get handshakes working
+	3) parse message: Inbetween
+		We can parse messages, however some still break our parser
+	4) request: Does not work
+		We do not have code for this
+	5) receive blocks: Does not work
+		We have structs to manage this when we recieve data, but no code to
+		actually do so
+	6) combine + verify: Does not work
+		We have structs to manage this when we recieve data, but no code to
+		actually do so 
+ 
+
+	Extra Credit
+	tracker: We can correctly create a get request for a tracker. Using an
+		outside program to send get requests to a tracker returns a peer 
+		list. However our program crashes when attempting to setup a 
+		connection with the tracker.
