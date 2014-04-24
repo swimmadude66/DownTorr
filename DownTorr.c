@@ -6,7 +6,6 @@
 #include <locale.h>
 #include <openssl/sha.h>
 #include "Utils.h"
-#include <curl/curl.h>
 
 char* torrent_file;
 char* file_dest;
@@ -30,9 +29,9 @@ void generate_GET(Torrent *t)
     char *encode;
     strcpy(tracker, "GET ");
     strcat(tracker, t->announce);
-    strcpy(params,"?info_hash=");
-    strcat(params,(char *)t->info_hash);
-    strcat(params,"&peer_id=");
+    strcat(tracker,"?info_hash=");
+    strcat(tracker,t->info_hash);
+    strcpy(params,"&peer_id=");
     strcat(params,"xxDOWNTORRDOWNTORRxx");
     strcat(params,"&port=6881&compact=0&uploaded=0&downloaded=0&left=");
     char length[100];
@@ -42,14 +41,7 @@ void generate_GET(Torrent *t)
     GET_request = (char *)malloc(1+strlen(tracker)+strlen(encode));
     strcpy(GET_request, tracker);
     strcat(GET_request, encode);
-//    free(tracker);
-
-    printf("Get Request: %s\n",GET_request);
 }
-
-
-
-
 
 
 int main(int argc, char*argv[]){
@@ -60,9 +52,8 @@ int main(int argc, char*argv[]){
   else{
       torrent_file = argv[1];
       file_dest = argv[2];
+      setlocale(LC_ALL,"en_US.UTF-8");
   }
-
-  setlocale(LC_ALL,"en_US.UTF-8");
 
   FILE *f = fopen(torrent_file, "rb");
 	if(f==NULL){
@@ -79,34 +70,33 @@ int main(int argc, char*argv[]){
   fclose(f);
   string[fsize]=0;
 
+//  Response *r=parse_response(string,fsize);
+
+
+
   Torrent *t=parse_torrent(string,fsize);
   str_t *info_dict = get_info_dict(string);
-//  t->info_hash = (unsigned char *)malloc(20);
-  SHA1((unsigned char *)info_dict->string, info_dict->length, t->info_hash);
+  unsigned char hashed[20];
+  SHA1((unsigned char *)info_dict->string, info_dict->length, hashed);
   free(string);
-  char encoded[60];
-  int bro;
-  int bigbro = 0;
-  for(bro = 0; bro < 20; bro++) {
-	sprintf(&encoded[bigbro], "%%%02x", t->info_hash[bro]);
-	bigbro += 3;
+  int i= 0;
+  int big = 0;
+  for(; i < 20; i++) {
+	sprintf(&t->info_hash[big], "%%%02x", hashed[i]);
+	big += 3;
   }
 
-  printf("INFO HASH: %s\n", encoded);
-  int i=0;
-  for(;i<20;i++){
-    printf("%02x ",t->info_hash[i]);
-  }
-  printf("\n");
-  printf("Downloading to %s%s\n",file_dest,t->name);
+  generate_GET(t);
 
   printf("announce: %s\n",t->announce);
   printf("name: %s\n",t->name);
   printf("piece length: %d\n",t->piece_length);
   printf("length: %d\n",t->length);
-  printf("path: %s\n",t->path);
   printf("url-list: %s\n",t->url_list);
   printf("num_pieces: %d\n",t->pieces_size/20);
+  printf("Get request: %s\n",GET_request);
+
+
 /*
   int i =0;
   for(;i< t->pieces_size;i++){
@@ -115,8 +105,9 @@ int main(int argc, char*argv[]){
   printf("\n");
 */
 
- generate_GET(t);
 
+
+//  printf("Downloading to %s%s\n",file_dest,t->name);
 
   return 0; 
 }

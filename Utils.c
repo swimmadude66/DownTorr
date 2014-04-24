@@ -30,6 +30,7 @@ Bencoding* new_bint(int val)
 	Bencoding *b = new_bencoding();
 	b->type = BInt;
 	b->cargo.val = val;
+	printf("int: %d\n",b->cargo.val);
 	return b;
 }
 
@@ -47,6 +48,7 @@ Bencoding* new_bstring(char *s, int len)
 	b->type = BString;
 	b->cargo.str.string = s;
 	b->cargo.str.length = len;
+	printf("string: %s  len: %d\n",b->cargo.str.string,b->cargo.str.length);
 	return b;
 }
 
@@ -130,17 +132,19 @@ Bencoding* parse_list()
 
 Bencoding* parse_string()
 {
+	printf("pos: %d char: %c\n",pos,buf[pos]);
 	int len = 0;
 	while (isdigit(peekChar()))
 		len = len*10 + (getChar() - '0');
 	matchChar(':');
 	char *s = malloc(sizeof(char)*(len+1));
-	int i;
-	for (i = 0; i < len; ++i){
+	int i=0;
+	for (; i < len; i++){
+		printf("pos: %d  char: %c\n",pos,buf[pos]);
 		s[i] = getChar();
 	}
 	s[len] = 0;
-	return new_bstring(s, len+1);
+	return new_bstring(s, len);
 }
 
 Bencoding* parse_dict()
@@ -150,11 +154,13 @@ Bencoding* parse_dict()
 	DictNode *c = &d;
 	while (peekChar() != 'e') {
 		c->next = new_dictnode();
+		printf("new dict\n");
 		c = c->next;
 		Bencoding *s = parse_string();
 		c->key = s->cargo.str.string;
 		free(s);
 		c->value = parse_bencoding();
+		printf("next dict node\n");
 		c->next = 0;
 	}
 	matchChar('e');
@@ -327,6 +333,7 @@ Response* parse_response(char *input, long limit)
 	}
 	DictNode *d = b->cargo.dict;
 	while(d != NULL){
+		printf("Parsing: %s\n",d->key);
 		if(!strcmp(d->key,"failure reason")){
 		  r->failure_reason = d->value->cargo.str.string;
 		  d = d->next;
