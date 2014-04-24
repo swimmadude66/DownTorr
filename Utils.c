@@ -3,6 +3,9 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include "Utils.h"
 
 
@@ -364,6 +367,62 @@ Response* parse_response(char *input, long limit)
 		}
 	}
 	return r;
+}
+
+Response *get_peers(char *get_request, char* announce){
+	int clientSocket;
+	struct sockaddr_in serverAddr;
+	struct hostent *host;
+	int commandReturn;
+	char rcvBuf[4096];
+
+	memset(&rcvBuf,0,4096);
+	char *serverIP[strlen(announce)]
+	unsigned int serverPort = 0;
+       	int index = 0;
+	int slashes = 2;	
+	
+	while (slashes) {
+		if(announce[index] == '/') {
+			slashes--;
+		}
+		index++;
+	}
+	int index_diff = index;
+	while(announce[index] != ':' || announce[index] != '/') {
+		serverIP[index - index_diff] = announce[index];
+		index++;
+	}
+	if (announce[index] == '/') {
+		serverPort = 80;
+	} else {
+		char *temp[5];
+		int temp_index = 0; 
+		while (announce[index] != '/') {
+			index++;
+			temp[temp_index] = announce[index];
+			temp_index++;
+		}	
+		serverPort = atoi(temp);
+	}
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+	host = gethostbyname(serverIP);
+	memcpy(&serverAddr.sin_addr, host->h_addr_list[0], host->h_length);
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(serverPort); 
+	commandReturn = connect(clientSock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	if (commandReturn == 0) {
+		printf("Connection successful\n");
+	} else {
+	        printf("Connection failed because: %s\n\n", strerror(errno));
+	
+	}
+	send(clientSocket, &get_request, sizeof(get_request), 0);
+	printf("sent!\n");
+	recv(clientSocket, &rcvBuf, sizeof(rcvBuf), 0);
+	printf("received!\n"); 
+	parse_response(rcvBuf);
+
 }
 
 void parse_peers(Response *r, ListNode *l)
