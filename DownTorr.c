@@ -1,11 +1,22 @@
-#include <stdio.h>
 #include <sys/socket.h>
+#include <locale.h>
+#include <openssl/sha.h>
+#include <stdio.h>		    	/* for printf() and fprintf() */
+#include <sys/socket.h>		    /* for socket(), connect(), send(), and recv() */
+#include <arpa/inet.h>		    /* for sockaddr_in and inet_addr() */
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <locale.h>
-#include <openssl/sha.h>
+
+/* For addrinfo types */ 
+#include <sys/types.h>
+#include <netdb.h>
 #include "Utils.h"
+
+/* Constants */
+#define RCVBUFSIZE 512		    /* The receive buffer size */
+#define SNDBUFSIZE 512		    /* The send buffer size */
+#define REPLYLEN 32
 
 char* torrent_file;
 char* file_dest;
@@ -27,8 +38,7 @@ void generate_GET(Torrent *t)
     char tracker[1024];
     char params[1024];
     char *encode;
-    strcpy(tracker, "GET ");
-    strcat(tracker, t->announce);
+    strcpy(tracker, t->announce);
     strcat(tracker,"?info_hash=");
     strcat(tracker,t->info_hash);
     strcpy(params,"&peer_id=");
@@ -70,10 +80,6 @@ int main(int argc, char*argv[]){
   fclose(f);
   string[fsize]=0;
 
-//  Response *r=parse_response(string,fsize);
-
-
-
   Torrent *t=parse_torrent(string,fsize);
   str_t *info_dict = get_info_dict(string);
   unsigned char hashed[20];
@@ -96,7 +102,11 @@ int main(int argc, char*argv[]){
   printf("num_pieces: %d\n",t->pieces_size/20);
   printf("Get request: %s\n",GET_request);
 
-
+  Response *r = get_peers(GET_request, t->announce);
+  
+  
+		
+  
 /*
   int i =0;
   for(;i< t->pieces_size;i++){

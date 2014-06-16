@@ -52,6 +52,11 @@ typedef struct Response {
     Peer* peers;
 } Response;
 
+typedef struct Address {
+	char *host;
+	int port;
+} Address;
+
 
 
 
@@ -84,3 +89,4 @@ Torrent* parse_torrent(char *input, long limit);
 Response* parse_response(char *input, long limit);
 void parse_peers(Response *r, ListNode *l);
 char *url_encode(char *str);
+Response* get_peers(char *get_request, char* announce);

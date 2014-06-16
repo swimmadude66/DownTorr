@@ -1,13 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <locale.h>
+#include <openssl/sha.h>
+#include <stdio.h>		    	/* for printf() and fprintf() */
 #include <sys/types.h>
+#include <sys/socket.h>		    /* for socket(), connect(), send(), and recv() */
+#include <arpa/inet.h>		    /* for sockaddr_in and inet_addr() */
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netdb.h>
 #include "Utils.h"
 
+/* Constants */
+#define RCVBUFSIZE 4096		    /* The receive buffer size */
+#define SNDBUFSIZE 4096		    /* The send buffer size */
+#define REPLYLEN 4096
 
 char buf[BUFSIZE];
 int pos = 0;
@@ -33,7 +40,7 @@ Bencoding* new_bint(int val)
 	Bencoding *b = new_bencoding();
 	b->type = BInt;
 	b->cargo.val = val;
-	printf("int: %d\n",b->cargo.val);
+//	printf("int: %d\n",b->cargo.val);
 	return b;
 }
 
@@ -51,7 +58,6 @@ Bencoding* new_bstring(char *s, int len)
 	b->type = BString;
 	b->cargo.str.string = s;
 	b->cargo.str.length = len;
-	printf("string: %s  len: %d\n",b->cargo.str.string,b->cargo.str.length);
 	return b;
 }
 
@@ -135,7 +141,6 @@ Bencoding* parse_list()
 
 Bencoding* parse_string()
 {
-	printf("pos: %d char: %c\n",pos,buf[pos]);
 	int len = 0;
 	while (isdigit(peekChar()))
 		len = len*10 + (getChar() - '0');
@@ -143,7 +148,6 @@ Bencoding* parse_string()
 	char *s = malloc(sizeof(char)*(len+1));
 	int i=0;
 	for (; i < len; i++){
-		printf("pos: %d  char: %c\n",pos,buf[pos]);
 		s[i] = getChar();
 	}
 	s[len] = 0;
@@ -157,13 +161,11 @@ Bencoding* parse_dict()
 	DictNode *c = &d;
 	while (peekChar() != 'e') {
 		c->next = new_dictnode();
-		printf("new dict\n");
 		c = c->next;
 		Bencoding *s = parse_string();
 		c->key = s->cargo.str.string;
 		free(s);
 		c->value = parse_bencoding();
-		printf("next dict node\n");
 		c->next = 0;
 	}
 	matchChar('e');
@@ -208,7 +210,7 @@ void print_indent(int indent)
 		printf("  ");
 }
 
-
+	
 str_t* get_info_dict(char *input) {
 	int index = 0;
 	int info_found = 0;
@@ -376,60 +378,116 @@ Response* parse_response(char *input, long limit)
 	return r;
 }
 
-Response *get_peers(char *get_request, char* announce){
-	int clientSocket;
-	struct sockaddr_in serverAddr;
-	struct hostent *host;
-	int commandReturn;
-	char rcvBuf[4096];
+Address *parse_announce(char *announce){
+	int numslashes=0;
+	int colon =0;
+	int http = 0;
+	int i=0;
+    Address *addr = malloc(sizeof(Address));
+    
+    while(numslashes <2){
+    	if(announce[i] == '/'){
+    		http = i;
+    		numslashes++;
+    	}
+    	i++;
+    }
+	while(colon == 0){
+	  if(announce[i] == ':'){
+	    colon = i;
+	  }
+	  i++;
+	}
+	http++;
+	char* tmpIP = malloc((colon-http)*sizeof(char));
+	int x =http;
+	for(;x<colon;x++){
+	 tmpIP[x-http] = announce[x]; 
+	}
+	colon++;
+	int z = colon;
+	int slash=0;
+	while(!slash){
+	  if(announce[z] == '/'){
+	    slash=z;
+	  }
+	  z++;
+	}
+	int portlen = (slash-colon);
+	char *tmp = malloc(portlen*sizeof(char));
+	int y=0;
+	for(;y<portlen;y++){
+	 tmp[y] = announce[colon+y];
+	}
+	printf("%s:%s\n",tmpIP,tmp);
+	addr->host = tmpIP;
+	addr->port = atoi(tmp);
+	printf("host: %s\n",addr->host);
+	printf("port: %i\n",addr->port);
+	return addr;
+}
 
-	memset(&rcvBuf,0,4096);
-	char *serverIP[strlen(announce)]
-	unsigned int serverPort = 0;
-       	int index = 0;
-	int slashes = 2;	
-	
-	while (slashes) {
-		if(announce[index] == '/') {
-			slashes--;
-		}
-		index++;
-	}
-	int index_diff = index;
-	while(announce[index] != ':' || announce[index] != '/') {
-		serverIP[index - index_diff] = announce[index];
-		index++;
-	}
-	if (announce[index] == '/') {
-		serverPort = 80;
-	} else {
-		char *temp[5];
-		int temp_index = 0; 
-		while (announce[index] != '/') {
-			index++;
-			temp[temp_index] = announce[index];
-			temp_index++;
-		}	
-		serverPort = atoi(temp);
-	}
-	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-	host = gethostbyname(serverIP);
-	memcpy(&serverAddr.sin_addr, host->h_addr_list[0], host->h_length);
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(serverPort); 
-	commandReturn = connect(clientSock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-	if (commandReturn == 0) {
-		printf("Connection successful\n");
-	} else {
-	        printf("Connection failed because: %s\n\n", strerror(errno));
-	
-	}
-	send(clientSocket, &get_request, sizeof(get_request), 0);
-	printf("sent!\n");
-	recv(clientSocket, &rcvBuf, sizeof(rcvBuf), 0);
-	printf("received!\n"); 
-	parse_response(rcvBuf);
+Response *get_peers(char *get_request, char *announce){
+    
+    int clientsock;		    			/* socket descriptor */
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+    Address *addr;  
 
+    char sndBuf[SNDBUFSIZE];	   		/* Send Buffer */
+    char rcvBuf[RCVBUFSIZE];	   		/* Receive Buffer */
+    int status;							/*Error Checking */
+    
+
+	char* ptr;
+	size_t n;
+
+    memset(&sndBuf, 0, SNDBUFSIZE);
+    memset(&rcvBuf, 0, RCVBUFSIZE);  
+    printf("parsing announce\n");
+    addr = parse_announce(announce);
+	
+	    /// Form request
+	snprintf(sndBuf, SNDBUFSIZE, 
+     "GET HTTP/1.1\r\n"  			// POST or GET, both tested and works. Both HTTP 1.0 HTTP 1.1 works, but sometimes 
+     "Host: %s\r\n"     			// but sometimes HTTP 1.0 works better in localhost type
+     "Content-type: application/x-www-form-urlencoded\r\n"
+     "Content-length: %d\r\n\r\n"
+     "%s\r\n", addr->host, (unsigned int)strlen(get_request), get_request);  
+    
+    clientsock = socket(AF_INET, SOCK_STREAM, 0);
+    if (clientsock < 0){
+        printf("ERROR opening socket");
+        exit(0);
+    }
+    server = gethostbyname(announce);
+	if (server == NULL) {
+        fprintf(stderr, "ERROR, no such host\n");
+        exit(0);
+    }
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    memcpy((char *) server->h_addr,
+            (char *) &serv_addr.sin_addr.s_addr,
+            server->h_length);
+    serv_addr.sin_port = htons(addr->port);
+    if (connect(clientsock, (struct sockaddr *) &serv_addr, sizeof (serv_addr)) < 0){
+    	printf("ERROR connecting");
+		exit(0);
+	}
+	n = send(clientsock, sndBuf, strlen(sndBuf), 0);
+    if (n < 0){
+       	printf("ERROR writing to socket");
+     	exit(0);
+    }
+    n = recv(clientsock, rcvBuf, RCVBUFSIZE, 0);
+    if (n < 0){
+       	printf("ERROR reading from socket");
+     	exit(0);
+    }
+    printf("%s\n", rcvBuf);
+    close(clientsock);
+    return parse_response(rcvBuf,sizeof(rcvBuf));
 }
 
 void parse_peers(Response *r, ListNode *l)
