@@ -10,10 +10,10 @@ namespace Downtorr
     {
         static void Main(string[] args)
         {
-            //TorrentModel model = new TorrentModel(DecodeTorrent(file));
-            //Announce ann = parseAnnounce(model);
+            //TorrentModel model = BDecode(file);
+            //Announce ann = parseAnnounce(mnodel);
             //PeerResponse r = get(ann);
-            //List<Peer> peers = Decode(r);
+            //List<Peer> peers = BDecode(r);
             //for (Peer p : peers){
                 //Response r = handshake(peer);
                 //download(r);
