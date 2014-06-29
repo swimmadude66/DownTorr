@@ -41,8 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bencode\BEncodedDictionary.cs" />
+    <Compile Include="Bencode\BEncodedList.cs" />
+    <Compile Include="Bencode\BEncodedNumber.cs" />
+    <Compile Include="Bencode\BEncodedString.cs" />
+    <Compile Include="Bencode\BEncodingException.cs" />
+    <Compile Include="Bencode\IBEncodedValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Bencode\RawReader.cs" />
+    <Compile Include="TorrentModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
